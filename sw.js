@@ -1,5 +1,5 @@
 /* Versioned cache. Guest photos live in IndexedDB and are never stored or cleared here. */
-var CACHE = "salin-booth-v7";
+var CACHE = "salin-booth-v8";
 var SHELL = [
   "./",
   "./index.html",

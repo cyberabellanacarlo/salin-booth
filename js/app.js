@@ -365,14 +365,32 @@
       size -= 1;
       title.style.fontSize = size + "px";
     }
-    if (sub && !sub.classList.contains("hidden")) {
+    if (!sub || sub.classList.contains("hidden")) return;
+    var subtitle = (sub.dataset.subtitle || "").trim();
+    var date = (sub.dataset.date || "").trim();
+    var both = (subtitle && date && subtitle !== date) ? (subtitle + "  ·  " + date) : (subtitle || date);
+    function subOverflows() {
+      var fs = parseFloat(getComputedStyle(sub).fontSize) || 14;
+      if (sub.scrollWidth > sub.clientWidth + 1) return true;
+      if (sub.scrollHeight > fs * 1.55 + 2) return true;
+      return false;
+    }
+    function tryLine(text) {
+      sub.textContent = text;
       var subSize = 20;
       var minSub = 14;
       sub.style.fontSize = subSize + "px";
-      while (subSize > minSub && (sub.scrollWidth > sub.clientWidth + 1 || sub.scrollHeight > subSize * 1.5 + 2)) {
+      while (subSize > minSub && subOverflows()) {
         subSize -= 1;
         sub.style.fontSize = subSize + "px";
       }
+      return !subOverflows();
+    }
+    /* Prefer subtitle + date on one line; if that's tight, keep the subtitle. Date always shows when there's no subtitle. */
+    if (subtitle && date && subtitle !== date) {
+      if (!tryLine(both)) tryLine(subtitle);
+    } else {
+      tryLine(subtitle || date);
     }
   }
 
@@ -383,15 +401,15 @@
     return storage.getSettings().then(function (s) {
       var name = (s.eventName || "").trim() || "Souvenir Wall";
       var sub = (s.eventSubtitle || "").trim();
+      var date = storage.formatEventDateLong(s.eventDate || storage.todayDate());
       titleEl.textContent = name;
       if (subEl) {
-        if (sub) {
-          subEl.textContent = sub;
-          subEl.classList.remove("hidden");
-        } else {
-          subEl.textContent = "";
-          subEl.classList.add("hidden");
-        }
+        subEl.dataset.subtitle = sub;
+        subEl.dataset.date = date;
+        if (sub && date && sub !== date) subEl.textContent = sub + "  ·  " + date;
+        else subEl.textContent = sub || date;
+        if (subEl.textContent) subEl.classList.remove("hidden");
+        else subEl.classList.add("hidden");
       }
       /* two rAFs so the paper has its laid-out width before we shrink type */
       requestAnimationFrame(function () {

@@ -219,20 +219,34 @@
     return s || "Photos";
   }
 
-  function formatEventDate(iso) {
+  var MONTHS_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  var MONTHS_LONG = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+  function formatDateParts(iso, months, fallback) {
     var p = String(iso || "").split("-");
-    var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     if (p.length >= 3) {
       var y = Number(p[0]), m = Number(p[1]), d = Number(p[2]);
       if (y && m) return months[m - 1] + " " + d + ", " + y;
     }
-    return dateLabelFromNow();
+    return fallback();
+  }
+
+  function formatEventDate(iso) {
+    return formatDateParts(iso, MONTHS_SHORT, dateLabelFromNow);
+  }
+
+  function formatEventDateLong(iso) {
+    return formatDateParts(iso, MONTHS_LONG, dateLabelFromNowLong);
   }
 
   function dateLabelFromNow() {
     var d = new Date();
-    var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    return months[d.getMonth()] + " " + d.getDate() + ", " + d.getFullYear();
+    return MONTHS_SHORT[d.getMonth()] + " " + d.getDate() + ", " + d.getFullYear();
+  }
+
+  function dateLabelFromNowLong() {
+    var d = new Date();
+    return MONTHS_LONG[d.getMonth()] + " " + d.getDate() + ", " + d.getFullYear();
   }
 
   function zipName(settings) {
@@ -263,6 +277,7 @@
     countSinceExport: countSinceExport,
     eventSlug: eventSlug,
     formatEventDate: formatEventDate,
+    formatEventDateLong: formatEventDateLong,
     zipName: zipName
   };
 })(window);

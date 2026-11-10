@@ -907,16 +907,16 @@ button {
 .test-msg.good { color: var(--olive); }
 
 @media (orientation: landscape) and (min-width: 900px) {
-  .view-booth { padding-top: calc(4px + var(--safe-t)); padding-bottom: calc(8px + var(--safe-b)); overflow: hidden; }
+  .view-booth { padding-top: calc(4px + var(--safe-t)); padding-bottom: 0; overflow: hidden; }
   .view-booth .booth-head { margin-bottom: 2px; }
   .view-booth .logo-hit img { height: 40px; }
   .view-booth .eyebrow { font-size: 11px; }
   .camera-stage {
-    flex: 0 0 auto;
+    flex: 1 1 auto;
     width: 100%;
     max-width: none;
     min-height: 0;
-    height: calc(var(--app-h, 100dvh) * 0.85);
+    height: auto;
     max-height: calc(var(--app-h, 100dvh) * 0.85);
   }
   .camera-frame {
@@ -926,7 +926,10 @@ button {
     max-width: 100%;
     aspect-ratio: 848 / 700;
   }
-  .booth-actions { margin-top: 6px; }
+  .booth-actions {
+    margin-top: 6px;
+    padding-bottom: calc(16px + var(--safe-b));
+  }
   .view-caption { overflow: hidden; }
   .caption-wrap { flex: 1; min-height: 0; overflow: hidden; }
   .caption-preview {
