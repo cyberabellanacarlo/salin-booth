@@ -190,16 +190,34 @@
       ctx.drawImage(assets.flowerBl, -10, H - 120 - blH, blW, blH);
       ctx.restore();
 
-      /* header labels */
-      ctx.fillStyle = "#3E4A33";
-      ctx.font = "400 30px 'Cormorant Garamond'";
+      /* header labels — event title sits under SOUVENIR ALBUM when it fits */
+      var evName = String(opts.eventName || "").trim();
+      var evSub = String(opts.eventSubtitle || "").trim();
+      var dateText = dateLabelFrom(opts.eventDate || opts.date);
       ctx.textBaseline = "top";
-      drawSpacedText(ctx, "SOUVENIR ALBUM", 70, 60, 8, "left");
+      ctx.textAlign = "left";
+      ctx.fillStyle = "#3E4A33";
+      ctx.font = "400 28px 'Cormorant Garamond'";
+      drawSpacedText(ctx, "SOUVENIR ALBUM", 70, evName ? 46 : 60, 8, "left");
 
-      /* Event date sits directly under SOUVENIR ALBUM (no static side date). */
-      ctx.fillStyle = "#8A7A5C";
-      ctx.font = "italic 28px 'Cormorant Garamond'";
-      drawSpacedText(ctx, dateLabelFrom(opts.eventDate || opts.date), 70, 98, 4, "left");
+      if (evName) {
+        var tSize = 30;
+        var headerMax = 700;
+        ctx.font = "700 " + tSize + "px Kalam";
+        while (tSize > 16 && ctx.measureText(evName).width > headerMax) {
+          tSize -= 1;
+          ctx.font = "700 " + tSize + "px Kalam";
+        }
+        ctx.fillStyle = "#2F3A26";
+        ctx.fillText(evName, 70, 80);
+        ctx.fillStyle = "#8A7A5C";
+        ctx.font = "italic 24px 'Cormorant Garamond'";
+        drawSpacedText(ctx, evSub || dateText, 70, 80 + tSize + 4, 3, "left");
+      } else {
+        ctx.fillStyle = "#8A7A5C";
+        ctx.font = "italic 28px 'Cormorant Garamond'";
+        drawSpacedText(ctx, evSub || dateText, 70, 98, 4, "left");
+      }
 
       /* card is rotated -1.2deg around its center */
       var cardX = 70, cardY = 150, cardW = 940, cardH = 1000;

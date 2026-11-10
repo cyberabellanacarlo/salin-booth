@@ -12,6 +12,7 @@
     backupUrl: "",
     backupSecret: "",
     eventName: "SALIN Eco Souvenir Bar",
+    eventSubtitle: "",
     eventDate: "",
     lastBackupError: "",
     lastExportAt: 0

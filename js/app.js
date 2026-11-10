@@ -333,6 +333,7 @@
     else if (window.matchMedia("(orientation: portrait) and (min-height: 1100px)").matches) visibleRows = 3;
     var rowH = Math.floor((h - gp - gpB - gapY * (visibleRows - 1)) / visibleRows);
     if (rowH > 80) boardGrid.style.setProperty("--row-h", rowH + "px");
+    fitWallLabel();
   }
 
   function bindViewport() {
@@ -345,13 +346,57 @@
     }
   }
 
+  function fitWallLabel() {
+    var title = $("board-event-title");
+    var sub = $("board-event-sub");
+    if (!title) return;
+    var maxTitle = 34;
+    var minTitle = 18;
+    var size = maxTitle;
+    title.style.fontSize = size + "px";
+    title.style.whiteSpace = "normal";
+    function titleOverflows() {
+      var lh = parseFloat(getComputedStyle(title).lineHeight) || size * 1.15;
+      if (title.scrollHeight > lh * 2.2 + 1) return true;
+      if (title.scrollWidth > title.clientWidth + 1) return true;
+      return false;
+    }
+    while (size > minTitle && titleOverflows()) {
+      size -= 1;
+      title.style.fontSize = size + "px";
+    }
+    if (sub && !sub.classList.contains("hidden")) {
+      var subSize = 20;
+      var minSub = 14;
+      sub.style.fontSize = subSize + "px";
+      while (subSize > minSub && (sub.scrollWidth > sub.clientWidth + 1 || sub.scrollHeight > subSize * 1.5 + 2)) {
+        subSize -= 1;
+        sub.style.fontSize = subSize + "px";
+      }
+    }
+  }
+
   function updateBoardEvent() {
-    var el = $("board-event");
-    if (!el) return Promise.resolve();
+    var titleEl = $("board-event-title");
+    var subEl = $("board-event-sub");
+    if (!titleEl) return Promise.resolve();
     return storage.getSettings().then(function (s) {
-      var name = (s.eventName || "").trim();
-      var date = s.eventDate ? storage.formatEventDate(s.eventDate) : "";
-      el.textContent = [name, date].filter(Boolean).join(" · ");
+      var name = (s.eventName || "").trim() || "Souvenir Wall";
+      var sub = (s.eventSubtitle || "").trim();
+      titleEl.textContent = name;
+      if (subEl) {
+        if (sub) {
+          subEl.textContent = sub;
+          subEl.classList.remove("hidden");
+        } else {
+          subEl.textContent = "";
+          subEl.classList.add("hidden");
+        }
+      }
+      /* two rAFs so the paper has its laid-out width before we shrink type */
+      requestAnimationFrame(function () {
+        requestAnimationFrame(fitWallLabel);
+      });
     });
   }
 
@@ -612,7 +657,9 @@
         photo: capturedBlob,
         caption: caption,
         date: eventDate,
-        eventDate: eventDate
+        eventDate: eventDate,
+        eventName: settings.eventName,
+        eventSubtitle: settings.eventSubtitle
       }).then(function (framed) {
         var photo = {
           id: id,
@@ -773,6 +820,7 @@
     $("backup-url").value = settings.backupUrl || "";
     $("backup-secret").value = settings.backupSecret || "";
     $("event-name").value = settings.eventName || "";
+    if ($("event-subtitle")) $("event-subtitle").value = settings.eventSubtitle || "";
     $("event-date").value = settings.eventDate || storage.todayDate();
     var on = !!settings.backupEnabled;
     $("backup-toggle").classList.toggle("on", on);
@@ -872,7 +920,11 @@
       backupUrl: $("backup-url").value.trim(),
       backupSecret: $("backup-secret").value,
       eventName: $("event-name").value.trim(),
+      eventSubtitle: $("event-subtitle") ? $("event-subtitle").value.trim() : "",
       eventDate: $("event-date").value
+    }).then(function (s) {
+      updateBoardEvent();
+      return s;
     });
   }
 
@@ -1082,8 +1134,8 @@
       }).then(refreshAdminCounts);
     });
 
-    ["backup-url", "backup-secret", "event-name", "event-date"].forEach(function (id) {
-      $(id).addEventListener("change", persistBackupFields);
+    ["backup-url", "backup-secret", "event-name", "event-subtitle", "event-date"].forEach(function (id) {
+      if ($(id)) $(id).addEventListener("change", persistBackupFields);
     });
 
     $("btn-test").addEventListener("click", function () {
@@ -1153,7 +1205,7 @@
           return fetchBlob(src).then(function (blob) {
             return storage.getSettings().then(function (s) {
               var eventDate = s.eventDate || storage.todayDate();
-              return frame.compose({ photo: blob, caption: SAMPLE_CAPTIONS[n - 1], date: eventDate, eventDate: eventDate }).then(function (framed) {
+              return frame.compose({ photo: blob, caption: SAMPLE_CAPTIONS[n - 1], date: eventDate, eventDate: eventDate, eventName: s.eventName, eventSubtitle: s.eventSubtitle }).then(function (framed) {
                 return { framed: framed, eventDate: eventDate };
               });
             }).then(function (pack) {
@@ -1263,10 +1315,8 @@
     }
     if (step === "d") {
       $("ne-event-date").value = storage.todayDate();
-      storage.getSettings().then(function (s) {
-        $("ne-event-name").value = s.eventName || "";
-        /* date still defaults to today for a new event */
-      });
+      $("ne-event-name").value = "";
+      if ($("ne-event-subtitle")) $("ne-event-subtitle").value = "";
     }
   }
 
@@ -1336,6 +1386,7 @@
 
   function finishNewEvent() {
     var name = String($("ne-event-name").value || "").trim();
+    var subtitle = $("ne-event-subtitle") ? String($("ne-event-subtitle").value || "").trim() : "";
     var date = $("ne-event-date").value || storage.todayDate();
     /* Wipe photos and the backup queue in IndexedDB only — not the service worker cache. */
     storage.clearPhotos().then(function () {
@@ -1345,12 +1396,14 @@
       afterPin = false;
       return storage.setSettings({
         eventName: name,
+        eventSubtitle: subtitle,
         eventDate: date,
         lastExportAt: 0,
         lastBackupError: ""
       });
     }).then(function () {
       if ($("event-name")) $("event-name").value = name;
+      if ($("event-subtitle")) $("event-subtitle").value = subtitle;
       if ($("event-date")) $("event-date").value = date;
       closeNewEvent();
       closeAdmin();

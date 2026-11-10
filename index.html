@@ -111,8 +111,17 @@
         </span>
       </button>
       <div class="board-titles">
-        <h1>Souvenir Wall</h1>
-        <p id="board-event" class="board-event"></p>
+        <h1 class="sr-only">Souvenir Wall</h1>
+        <div id="wall-label" class="wall-label">
+          <span class="wall-label-tape" aria-hidden="true">
+            <span class="wall-label-tape-text">Souvenir Wall</span>
+          </span>
+          <span class="wall-label-sheet" aria-hidden="true"></span>
+          <div class="wall-label-ink">
+            <p id="board-event-title" class="wall-label-title"></p>
+            <p id="board-event-sub" class="wall-label-sub hidden"></p>
+          </div>
+        </div>
       </div>
     </header>
     <div class="board-scroll" id="board-scroll">
@@ -172,6 +181,23 @@
       </section>
 
       <section class="admin-section">
+        <h3>This event</h3>
+        <p class="admin-note">This title appears on a paper label at the top of the wall. It stays on this tablet and resets when you start a new event.</p>
+        <div class="field">
+          <label for="event-name">Event title</label>
+          <input type="text" id="event-name" maxlength="80" placeholder="Mia &amp; Josh's Wedding" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="event-subtitle">Second line (optional)</label>
+          <input type="text" id="event-subtitle" maxlength="60" placeholder="November 15, 2026" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="event-date">Event date</label>
+          <input type="date" id="event-date">
+        </div>
+      </section>
+
+      <section class="admin-section">
         <h3>Event photos</h3>
         <div class="btn-row" style="justify-content:flex-start;margin-bottom:12px">
           <button type="button" class="btn" id="btn-export-all">Export all (backup so far)<span id="export-nudge" class="nudge hidden" aria-label="Backup recommended">•</span></button>
@@ -199,14 +225,6 @@
         <div class="field">
           <label for="backup-secret">Secret</label>
           <input type="password" id="backup-secret" placeholder="Paste the secret from the setup log" autocomplete="off" spellcheck="false">
-        </div>
-        <div class="field">
-          <label for="event-name">Event name</label>
-          <input type="text" id="event-name" maxlength="80" placeholder="SALIN Eco Souvenir Bar">
-        </div>
-        <div class="field">
-          <label for="event-date">Event date</label>
-          <input type="date" id="event-date">
         </div>
         <div class="btn-row" style="justify-content:flex-start">
           <button type="button" class="btn btn-ghost" id="btn-test">Test connection</button>
@@ -256,10 +274,14 @@
       </div>
 
       <div id="ne-step-d" class="ne-step hidden">
-        <p>Name the new event. The date will print on each souvenir photo, under “Souvenir Album”.</p>
+        <p>Name the new event. The title appears on the wall label. The date will print on each souvenir photo, under “Souvenir Album”.</p>
         <div class="field">
-          <label for="ne-event-name">Event name</label>
-          <input type="text" id="ne-event-name" maxlength="80" placeholder="SALIN Eco Souvenir Bar">
+          <label for="ne-event-name">Event title</label>
+          <input type="text" id="ne-event-name" maxlength="80" placeholder="Mia &amp; Josh's Wedding" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="ne-event-subtitle">Second line (optional)</label>
+          <input type="text" id="ne-event-subtitle" maxlength="60" placeholder="November 15, 2026" autocomplete="off">
         </div>
         <div class="field">
           <label for="ne-event-date">Event date</label>
