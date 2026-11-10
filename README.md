@@ -29,7 +29,9 @@ Press and hold the **SA·LIN logo** for about one second, then enter the PIN. Th
 The header shows a live count: **✓ N photos saved**, and if cloud backup is on, **· M backed up ☁**.
 
 - **Export all (backup so far)** — download a ZIP of every framed photo already taken, any time during the event.
-- **Pick photos** — choose a subset, then export those only.
+- **Save to Photos** — on an iPad, opens the share sheet so you can save framed photos to the Photos app (in batches of 20 if there are many). If the share sheet is not available, use Export all instead.
+- **Pick photos** — choose a subset, then export or save those only.
+- **Switch camera** — host only, in this menu. Guests cannot flip the camera.
 - **Start new event** — walk through export, PIN, type CLEAR, then set the new event name and date. This wipes photos on this tablet only (not the app cache, and not Google Drive).
 - **Setup tips** — iPad Guided Access, Android app pinning, Add to Home Screen, and export reminders. See also [SETUP.md](SETUP.md).
 - **Cloud backup** — optional silent copy to your Google Drive. See [drive-backup/SALIN-Drive-Setup.md](drive-backup/SALIN-Drive-Setup.md). The Web App URL and secret are stored only on this tablet, never in the project files.

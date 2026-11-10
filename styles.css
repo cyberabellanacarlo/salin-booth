@@ -149,13 +149,25 @@ button {
   min-height: 48px;
   min-width: 48px;
   display: flex;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
+  gap: 6px;
   padding: 4px 8px;
   background: none;
   box-shadow: none;
   cursor: pointer;
 }
+.logo-lock {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--olive);
+  opacity: 0.35;
+  flex-shrink: 0;
+  line-height: 0;
+}
+.logo-lock svg { display: block; }
 .logo-hit img {
   height: 64px;
   width: auto;
@@ -257,45 +269,32 @@ button {
   flex-shrink: 0;
 }
 .shutter-wrap {
-  display: flex;
-  flex-direction: column;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 2px;
-  background: transparent;
-  box-shadow: none;
-  border: 0;
-  padding: 0;
   min-width: 64px;
   min-height: 64px;
-  color: var(--olive);
-}
-.shutter-label {
+  padding: 16px 28px;
+  border-radius: 999px;
+  background: #2F3A26;
+  color: #FBF9F4;
   font-family: "Cormorant Garamond", "Palatino Linotype", Palatino, "Times New Roman", serif;
-  font-size: 13px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  font-size: 20px;
   font-weight: 600;
-  line-height: 1.1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.2;
   white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(47, 58, 38, 0.22);
 }
-.shutter {
-  display: block;
-  width: 84px;
-  height: 84px;
-  min-width: 84px;
-  min-height: 84px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 40% 36%, #f7efe2, #FBF9F4 55%, #e6dccb);
-  border: 6px solid var(--olive);
-  box-shadow: 0 6px 16px rgba(47, 58, 38, 0.25);
-  padding: 0;
-}
-.shutter-wrap:active .shutter { transform: scale(0.96); }
+.shutter-wrap:active { transform: scale(0.98); }
 .shutter-wrap:disabled,
 .shutter-wrap[disabled] { opacity: 0.45; }
-@media (orientation: landscape) and (max-height: 800px) {
-  .shutter { width: 64px; height: 64px; min-width: 64px; min-height: 64px; border-width: 5px; }
+.btn-see-board,
+#btn-see-board {
+  font-size: 18px;
+  min-height: 48px;
+  letter-spacing: 0.08em;
 }
 
 /* ---------- caption ---------- */
@@ -423,11 +422,27 @@ button {
   transform: rotate(var(--tilt, 0deg));
   transform-origin: 50% 8%;
 }
-.pin-card.is-new { animation: dropIn 0.7s ease-out; }
-@keyframes dropIn {
-  0% { opacity: 0; transform: translateY(-48px) rotate(var(--tilt, 0deg)); }
-  70% { opacity: 1; transform: translateY(6px) rotate(var(--tilt, 0deg)); }
-  100% { opacity: 1; transform: translateY(0) rotate(var(--tilt, 0deg)); }
+.pin-card.is-new {
+  animation: pinHighlight 6s ease-out;
+  z-index: 4;
+}
+@keyframes pinHighlight {
+  0% {
+    transform: scale(1.05) rotate(var(--tilt, 0deg));
+    box-shadow: 0 0 0 6px rgba(176, 141, 87, 0.7), 0 18px 36px var(--shadow);
+  }
+  18% {
+    transform: scale(1.06) rotate(var(--tilt, 0deg));
+    box-shadow: 0 0 0 5px rgba(176, 141, 87, 0.6), 0 16px 32px var(--shadow);
+  }
+  70% {
+    transform: scale(1.03) rotate(var(--tilt, 0deg));
+    box-shadow: 0 0 0 4px rgba(176, 141, 87, 0.35), 0 14px 28px var(--shadow);
+  }
+  100% {
+    transform: scale(1) rotate(var(--tilt, 0deg));
+    box-shadow: 0 12px 26px var(--shadow);
+  }
 }
 .pin {
   position: absolute;
@@ -690,7 +705,7 @@ button {
 .switch.on::after { transform: translateX(24px); }
 .admin-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 12px;
 }
 .admin-tile {
@@ -711,7 +726,37 @@ button {
   max-height: 2.6em;
   overflow: hidden;
 }
-.tile-actions { padding: 0 8px 8px; }
+.tile-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding: 4px 8px 8px;
+}
+.btn-icon-delete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
+  padding: 0;
+  border-radius: 10px;
+  background: #7a3a33;
+  color: #fff;
+  box-shadow: none;
+}
+.btn-icon-delete svg { display: block; width: 22px; height: 22px; }
+.pin-banner {
+  margin: 0 0 14px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: rgba(176, 141, 87, 0.18);
+  color: var(--olive);
+  font-size: 17px;
+  letter-spacing: 0.03em;
+  text-align: center;
+}
+.admin-note { margin: 0 0 10px; font-size: 16px; color: var(--ink); }
 .tile-check {
   position: absolute;
   top: 4px;
@@ -725,10 +770,26 @@ button {
 .test-msg.good { color: var(--olive); }
 
 @media (orientation: landscape) and (min-width: 900px) {
-  .view-booth { padding-top: calc(6px + var(--safe-t)); padding-bottom: calc(10px + var(--safe-b)); overflow: hidden; }
-  .logo-hit img { height: 52px; }
-  .camera-stage { min-height: 0; }
-  .booth-actions { margin-top: 8px; }
+  .view-booth { padding-top: calc(4px + var(--safe-t)); padding-bottom: calc(8px + var(--safe-b)); overflow: hidden; }
+  .view-booth .booth-head { margin-bottom: 2px; }
+  .view-booth .logo-hit img { height: 40px; }
+  .view-booth .eyebrow { font-size: 11px; }
+  .camera-stage {
+    flex: 0 0 auto;
+    width: 100%;
+    max-width: none;
+    min-height: 0;
+    height: calc(var(--app-h, 100dvh) * 0.85);
+    max-height: calc(var(--app-h, 100dvh) * 0.85);
+  }
+  .camera-frame {
+    height: 100%;
+    width: auto;
+    max-height: 100%;
+    max-width: 100%;
+    aspect-ratio: 848 / 700;
+  }
+  .booth-actions { margin-top: 6px; }
   .view-caption { overflow: hidden; }
   .caption-wrap { flex: 1; min-height: 0; overflow: hidden; }
   .caption-preview {
@@ -744,7 +805,10 @@ button {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .pin-card.is-new { animation: none; }
+  .pin-card.is-new {
+    animation: none;
+    box-shadow: 0 0 0 4px rgba(176, 141, 87, 0.55), 0 12px 26px var(--shadow);
+  }
   .flash.on { animation: none; opacity: 0; }
 }
 

@@ -36,6 +36,11 @@
   var photoCountCache = 0;
   var persistOk = false;
   var nePinBuffer = "";
+  var countingDown = false;
+  var idleTimer = null;
+  var readyShareFiles = [];
+  var shareIndex = 0;
+  var SHARE_BATCH = 20;
 
   function $(id) { return document.getElementById(id); }
 
@@ -56,7 +61,12 @@
     } else if (window.SalinCompliments) {
       SalinCompliments.start();
     }
-    if (name === "board") updateBoardEvent();
+    if (name === "board") {
+      updateBoardEvent();
+      clearIdleTimer();
+    } else {
+      bumpIdle();
+    }
   }
 
   function kindCamError(err) {
@@ -210,6 +220,8 @@
       return;
     }
     busy = true;
+    countingDown = true;
+    clearIdleTimer();
     shutterBtn.disabled = true;
     if (window.SalinCompliments) SalinCompliments.fresh();
     var n = 3;
@@ -237,11 +249,15 @@
           showView("caption");
           stopCamera();
           busy = false;
+          countingDown = false;
           shutterBtn.disabled = false;
+          bumpIdle();
           setTimeout(function () { captionInput.focus(); }, 200);
         }).catch(function () {
           busy = false;
+          countingDown = false;
           shutterBtn.disabled = false;
+          bumpIdle();
         });
       }
     }
@@ -375,6 +391,150 @@
     returnLeft = 0;
   }
 
+
+  function qaMode() {
+    return location.search.indexOf("qa=1") !== -1;
+  }
+
+  function anyModalOpen() {
+    return ["admin-modal", "pin-modal", "newevent-modal", "setup-modal"].some(function (id) {
+      var el = $(id);
+      return el && !el.classList.contains("hidden");
+    });
+  }
+
+  function clearIdleTimer() {
+    if (idleTimer) {
+      clearTimeout(idleTimer);
+      idleTimer = null;
+    }
+  }
+
+  function bumpIdle() {
+    clearIdleTimer();
+    if (qaMode()) return;
+    if (currentView !== "booth" && currentView !== "caption") return;
+    if (countingDown || busy) return;
+    if (anyModalOpen()) return;
+    idleTimer = setTimeout(resetToCleanCamera, 20000);
+  }
+
+  function resetToCleanCamera() {
+    clearIdleTimer();
+    if (countingDown) return;
+    captionInput.value = "";
+    charCount.textContent = "0";
+    capturedBlob = null;
+    if (capturedUrl) {
+      URL.revokeObjectURL(capturedUrl);
+      capturedUrl = "";
+    }
+    captionPreview.removeAttribute("src");
+    goBooth();
+  }
+
+  function updatePinBanner(settings) {
+    var banner = $("pin-default-banner");
+    if (!banner) return;
+    var pin = String((settings && settings.pin) || "1234");
+    banner.classList.toggle("hidden", pin !== "1234");
+  }
+
+  function filesSupported(files) {
+    try {
+      return !!(navigator.share && navigator.canShare && navigator.canShare({ files: files }));
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function fileFromPhoto(p) {
+    if (!p || !p.framed) return null;
+    var name = p.filename || (p.id + ".jpg");
+    if (!/\.jpe?g$/i.test(name)) name += ".jpg";
+    try {
+      return new File([p.framed], name, { type: "image/jpeg" });
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function buildShareFiles(photos) {
+    var list = photos || [];
+    if (pickMode) {
+      list = list.filter(function (p) { return selectedIds[p.id]; });
+    }
+    readyShareFiles = [];
+    list.forEach(function (p) {
+      var f = fileFromPhoto(p);
+      if (f) readyShareFiles.push(f);
+    });
+    shareIndex = 0;
+    updateShareButton();
+  }
+
+  function updateShareButton() {
+    var btn = $("btn-save-photos");
+    var msg = $("save-photos-msg");
+    if (!btn) return;
+    var total = readyShareFiles.length;
+    var left = Math.max(0, total - shareIndex);
+    btn.disabled = total === 0;
+    if (shareIndex > 0 && left > 0) {
+      btn.textContent = "Save next " + Math.min(SHARE_BATCH, left);
+    } else if (pickMode) {
+      btn.textContent = "Save selected to Photos";
+    } else {
+      btn.textContent = "Save to Photos";
+    }
+    if (msg && shareIndex === 0 && msg.dataset.locked !== "1") {
+      msg.className = "test-msg";
+      msg.textContent = "";
+    }
+  }
+
+  function sharePhotosNow() {
+    var msg = $("save-photos-msg");
+    msg.dataset.locked = "1";
+    var total = readyShareFiles.length;
+    if (!total) {
+      msg.className = "test-msg";
+      msg.textContent = "No photos to save.";
+      return;
+    }
+    var batch = readyShareFiles.slice(shareIndex, shareIndex + SHARE_BATCH);
+    if (!batch.length) {
+      msg.className = "test-msg good";
+      msg.textContent = "Saved " + total + " of " + total + ".";
+      return;
+    }
+    if (!filesSupported(batch)) {
+      msg.className = "test-msg";
+      msg.textContent = "Use Export all instead";
+      return;
+    }
+    /* share() must run in this tap handler — files are already in memory. */
+    navigator.share({ files: batch }).then(function () {
+      var from = shareIndex + 1;
+      shareIndex += batch.length;
+      var to = shareIndex;
+      msg.className = "test-msg good";
+      msg.textContent = "Saved " + from + "\u2013" + to + " of " + total;
+      updateShareButton();
+      if (shareIndex >= total) {
+        msg.textContent = "Saved " + total + " of " + total;
+      }
+    }).catch(function (err) {
+      if (err && err.name === "AbortError") {
+        msg.className = "test-msg";
+        msg.textContent = "Save canceled.";
+        return;
+      }
+      msg.className = "test-msg bad";
+      msg.textContent = "Use Export all instead";
+    });
+  }
+
   function goBooth() {
     clearReturnTimer();
     afterPin = false;
@@ -465,6 +625,7 @@
 
   /* ---------- admin ---------- */
   function openPinModal() {
+    clearIdleTimer();
     pinBuffer = "";
     $("pin-msg").textContent = "";
     renderPinDots();
@@ -474,6 +635,7 @@
   function closePinModal() {
     $("pin-modal").classList.add("hidden");
     pinBuffer = "";
+    bumpIdle();
   }
 
   function renderPinDots() {
@@ -582,6 +744,12 @@
     $("backup-toggle-label").textContent = on
       ? "On — new photos back up silently to your Drive"
       : "Off — photos stay on this tablet only";
+    updatePinBanner(settings);
+    var face = $("admin-facing-msg");
+    if (face) {
+      face.className = "test-msg";
+      face.textContent = facing === "user" ? "Front camera (selfie)." : "Back camera.";
+    }
   }
 
   function renderAdminGrid(photos) {
@@ -607,6 +775,7 @@
           if (cb.checked) selectedIds[p.id] = true;
           else delete selectedIds[p.id];
           fig.classList.toggle("picked", cb.checked);
+          storage.getAllPhotos().then(buildShareFiles);
         });
         fig.appendChild(cb);
       } else {
@@ -614,8 +783,9 @@
         actions.className = "tile-actions";
         var del = document.createElement("button");
         del.type = "button";
-        del.className = "btn btn-danger btn-block";
-        del.textContent = "Delete";
+        del.className = "btn-icon-delete";
+        del.setAttribute("aria-label", "Delete photo");
+        del.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9 3h6l1 2h4v2H4V5h4l1-2zm1 6h2v10h-2V9zm4 0h2v10h-2V9zM7 9h2v10H7V9zm-1 12h12V8H6v13z"/></svg>';
         del.addEventListener("click", function () {
           if (!confirm("Delete this photo from the board and from this tablet?")) return;
           storage.deletePhoto(p.id).then(function () {
@@ -641,19 +811,24 @@
     $("btn-pick").textContent = "Pick photos";
     $("test-msg").textContent = "";
     $("pin-save-msg").textContent = "";
+    $("save-photos-msg").textContent = "";
+    $("save-photos-msg").dataset.locked = "";
     $("admin-modal").classList.remove("hidden");
+    clearIdleTimer();
     checkStorageHealth();
     storage.getSettings().then(function (s) {
       fillAdminForm(s);
       return Promise.all([storage.getAllPhotos(), refreshAdminCounts()]);
     }).then(function (pair) {
       renderAdminGrid(pair[0]);
+      buildShareFiles(pair[0]);
     });
   }
 
   function closeAdmin() {
     $("admin-modal").classList.add("hidden");
     if (currentView === "board") renderBoard({ highlightId: justPinnedId });
+    bumpIdle();
   }
 
   function persistBackupFields() {
@@ -709,10 +884,14 @@
     });
 
     shutterBtn.addEventListener("click", startCountdown);
-    switchBtn.addEventListener("click", function () {
-      facing = facing === "user" ? "environment" : "user";
-      startCamera();
-    });
+    if (switchBtn) {
+      switchBtn.addEventListener("click", function () {
+        facing = facing === "user" ? "environment" : "user";
+        startCamera();
+        storage.getSettings().then(fillAdminForm);
+      });
+    }
+    $("btn-save-photos").addEventListener("click", sharePhotosNow);
     $("btn-see-board").addEventListener("click", function () {
       afterPin = false;
       justPinnedId = null;
@@ -727,7 +906,10 @@
       var v = captionInput.value.slice(0, 80);
       if (v !== captionInput.value) captionInput.value = v;
       charCount.textContent = String(v.length);
+      bumpIdle();
     });
+    document.addEventListener("pointerdown", function () { bumpIdle(); }, true);
+    document.addEventListener("keydown", function () { bumpIdle(); }, true);
     $("btn-next").addEventListener("click", goBooth);
     backBoothBtn.addEventListener("click", goBooth);
     $("btn-pin-cancel").addEventListener("click", closePinModal);
@@ -742,7 +924,9 @@
       $("btn-export-picked").classList.toggle("hidden", !pickMode);
       $("pick-hint").classList.toggle("hidden", !pickMode);
       $("btn-pick").textContent = pickMode ? "Cancel pick" : "Pick photos";
-      renderAdminGridRefresh();
+      renderAdminGridRefresh().then(function () {
+        return storage.getAllPhotos().then(buildShareFiles);
+      });
     });
     $("btn-export-picked").addEventListener("click", function () {
       var ids = Object.keys(selectedIds);
@@ -773,9 +957,11 @@
     $("ne-start").addEventListener("click", finishNewEvent);
     $("btn-setup-tips").addEventListener("click", function () {
       $("setup-modal").classList.remove("hidden");
+      clearIdleTimer();
     });
     $("btn-setup-close").addEventListener("click", function () {
       $("setup-modal").classList.add("hidden");
+      bumpIdle();
     });
 
     $("backup-toggle").addEventListener("click", function () {
@@ -819,10 +1005,11 @@
         out.textContent = "Use 4 to 8 digits.";
         return;
       }
-      storage.setSettings({ pin: v }).then(function () {
+      storage.setSettings({ pin: v }).then(function (s) {
         $("new-pin").value = "";
         out.className = "test-msg good";
         out.textContent = "PIN saved on this tablet only.";
+        updatePinBanner(s);
       });
     });
 
@@ -953,7 +1140,11 @@
         setAppHeight();
       }
     },
-    layoutWall: layoutWall
+    layoutWall: layoutWall,
+    resetToCleanCamera: resetToCleanCamera,
+    bumpIdle: bumpIdle,
+    shareReadyCount: function () { return readyShareFiles.length; },
+    shareIndex: function () { return shareIndex; }
   };
 
   /* ---------- new event wizard ---------- */
@@ -1029,11 +1220,13 @@
       $("ne-export-count").textContent = n === 1 ? "1 photo is on this tablet." : (n + " photos are on this tablet.");
       neGoStep("a");
       $("newevent-modal").classList.remove("hidden");
+      clearIdleTimer();
     });
   }
 
   function closeNewEvent() {
     $("newevent-modal").classList.add("hidden");
+    bumpIdle();
   }
 
   function finishNewEvent() {

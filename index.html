@@ -23,6 +23,11 @@
     <header class="booth-head">
       <button type="button" class="logo-hit js-logo" title="SALIN" aria-label="SALIN logo">
         <img src="assets/logo.png" alt="SA·LIN Eco-Souvenir Booth">
+        <span class="logo-lock" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="14" height="14" focusable="false">
+            <path fill="currentColor" d="M17 8h-1V6a4 4 0 1 0-8 0v2H7a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2zm-7-2a2 2 0 1 1 4 0v2h-4V6zm5 12H9v-2h6v2zm0-4H9v-2h6v2z"/>
+          </svg>
+        </span>
       </button>
       <p class="eyebrow">Souvenir booth</p>
     </header>
@@ -36,12 +41,8 @@
       </div>
     </div>
     <div class="booth-actions">
-      <button type="button" class="btn btn-ghost" id="btn-switch">Switch camera</button>
-      <button type="button" class="shutter-wrap" id="btn-shutter" aria-label="Take a photo">
-        <span class="shutter" aria-hidden="true"></span>
-        <span class="shutter-label">Take a photo</span>
-      </button>
-      <button type="button" class="btn btn-ghost" id="btn-see-board">See the board</button>
+      <button type="button" class="shutter-wrap" id="btn-shutter" aria-label="Take a photo">Take a photo</button>
+      <button type="button" class="btn btn-ghost btn-see-board" id="btn-see-board">See the board</button>
     </div>
   </section>
 
@@ -50,6 +51,11 @@
     <header class="booth-head">
       <button type="button" class="logo-hit js-logo" title="SALIN" aria-label="SALIN logo">
         <img src="assets/logo.png" alt="SA·LIN Eco-Souvenir Booth">
+        <span class="logo-lock" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="14" height="14" focusable="false">
+            <path fill="currentColor" d="M17 8h-1V6a4 4 0 1 0-8 0v2H7a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2zm-7-2a2 2 0 1 1 4 0v2h-4V6zm5 12H9v-2h6v2zm0-4H9v-2h6v2z"/>
+          </svg>
+        </span>
       </button>
       <p class="eyebrow">Write a short message</p>
     </header>
@@ -72,6 +78,11 @@
     <header class="board-head">
       <button type="button" class="logo-hit js-logo" title="SALIN" aria-label="SALIN logo">
         <img src="assets/logo.png" alt="SA·LIN Eco-Souvenir Booth">
+        <span class="logo-lock" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="14" height="14" focusable="false">
+            <path fill="currentColor" d="M17 8h-1V6a4 4 0 1 0-8 0v2H7a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2zm-7-2a2 2 0 1 1 4 0v2h-4V6zm5 12H9v-2h6v2zm0-4H9v-2h6v2z"/>
+          </svg>
+        </span>
       </button>
       <div class="board-titles">
         <h1>Souvenir Wall</h1>
@@ -118,16 +129,31 @@
       </header>
       <p id="host-warn" class="admin-error hidden" role="status"></p>
       <p id="admin-backup-error" class="admin-error hidden"></p>
+      <p id="pin-default-banner" class="pin-banner hidden" role="status">Change your PIN from 1234</p>
+
+      <section class="admin-section" id="admin-pin-section">
+        <h3>Change PIN</h3>
+        <div class="field">
+          <label for="new-pin">New 4-digit PIN</label>
+          <input type="password" id="new-pin" inputmode="numeric" maxlength="8" placeholder="1234" autocomplete="off">
+        </div>
+        <div class="btn-row" style="justify-content:flex-start">
+          <button type="button" class="btn btn-ghost" id="btn-save-pin">Save PIN</button>
+        </div>
+        <p class="test-msg" id="pin-save-msg"></p>
+      </section>
 
       <section class="admin-section">
         <h3>Event photos</h3>
         <div class="btn-row" style="justify-content:flex-start;margin-bottom:12px">
           <button type="button" class="btn" id="btn-export-all">Export all (backup so far)<span id="export-nudge" class="nudge hidden" aria-label="Backup recommended">•</span></button>
+          <button type="button" class="btn" id="btn-save-photos">Save to Photos</button>
           <button type="button" class="btn btn-ghost" id="btn-pick">Pick photos</button>
           <button type="button" class="btn btn-gold hidden" id="btn-export-picked">Export selected</button>
           <button type="button" class="btn btn-ghost" id="btn-new-event">Start new event</button>
           <button type="button" class="btn btn-ghost" id="btn-setup-tips">Setup tips</button>
         </div>
+        <p class="test-msg" id="save-photos-msg"></p>
         <p id="pick-hint" class="hidden" style="margin:0 0 10px;color:var(--muted)">Tick the photos to include, then tap Export selected. Guests never see this.</p>
         <div class="admin-grid" id="admin-grid"></div>
       </section>
@@ -161,15 +187,12 @@
       </section>
 
       <section class="admin-section">
-        <h3>Change PIN</h3>
-        <div class="field">
-          <label for="new-pin">New 4-digit PIN</label>
-          <input type="password" id="new-pin" inputmode="numeric" maxlength="8" placeholder="1234" autocomplete="off">
-        </div>
+        <h3>Camera</h3>
+        <p class="admin-note">Guests always use this tablet’s camera. Switch to the other camera only if you need to.</p>
         <div class="btn-row" style="justify-content:flex-start">
-          <button type="button" class="btn btn-ghost" id="btn-save-pin">Save PIN</button>
+          <button type="button" class="btn btn-ghost" id="btn-admin-switch">Switch camera</button>
         </div>
-        <p class="test-msg" id="pin-save-msg"></p>
+        <p class="test-msg" id="admin-facing-msg"></p>
       </section>
     </div>
   </div>
