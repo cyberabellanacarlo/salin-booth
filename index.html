@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#2F3A26">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="SALIN Booth">
+  <title>SALIN Souvenir Booth</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <img class="fl fl-tr" src="assets/flower_tr.png" alt="" width="230" height="315">
+  <img class="fl fl-bl" src="assets/flower_bl.png" alt="" width="270" height="241">
+
+  <!-- BOOTH -->
+  <section id="view-booth" class="view view-booth" aria-label="Photo booth">
+    <header class="booth-head">
+      <button type="button" class="logo-hit js-logo" title="SALIN" aria-label="SALIN logo">
+        <img src="assets/logo.png" alt="SA·LIN Eco-Souvenir Booth">
+      </button>
+      <p class="eyebrow">Souvenir booth</p>
+    </header>
+    <div class="camera-stage">
+      <div class="camera-frame">
+        <video id="cam" autoplay muted playsinline webkit-playsinline></video>
+        <div id="compliment" class="compliment" aria-live="polite"><span id="compliment-text"></span></div>
+        <div id="countdown" class="countdown hidden" aria-live="assertive"></div>
+        <div id="flash" class="flash"></div>
+        <div id="cam-error" class="cam-error hidden" role="alert"></div>
+      </div>
+    </div>
+    <div class="booth-actions">
+      <button type="button" class="btn btn-ghost" id="btn-switch">Switch camera</button>
+      <button type="button" class="shutter-wrap" id="btn-shutter" aria-label="Take a photo">
+        <span class="shutter" aria-hidden="true"></span>
+        <span class="shutter-label">Take a photo</span>
+      </button>
+      <button type="button" class="btn btn-ghost" id="btn-see-board">See the board</button>
+    </div>
+  </section>
+
+  <!-- CAPTION -->
+  <section id="view-caption" class="view view-caption hidden" aria-label="Write a message">
+    <header class="booth-head">
+      <button type="button" class="logo-hit js-logo" title="SALIN" aria-label="SALIN logo">
+        <img src="assets/logo.png" alt="SA·LIN Eco-Souvenir Booth">
+      </button>
+      <p class="eyebrow">Write a short message</p>
+    </header>
+    <div class="caption-wrap">
+      <img id="caption-preview" class="caption-preview" alt="Your photo">
+      <p class="caption-label">Add a note for the wall</p>
+      <textarea id="caption-input" maxlength="80" rows="2" placeholder="I'm lovin Salin!" autocomplete="off" autocapitalize="sentences"></textarea>
+      <p class="char-count"><span id="char-count">0</span>/80</p>
+      <div class="btn-row">
+        <button type="button" class="btn btn-ghost" id="btn-retake">Retake</button>
+        <button type="button" class="btn btn-gold btn-main" id="btn-pin">Pin it!</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- BOARD -->
+  <section id="view-board" class="view view-board hidden" aria-label="Souvenir wall">
+    <img class="fl fl-tr" src="assets/flower_tr.png" alt="">
+    <img class="fl fl-bl" src="assets/flower_bl.png" alt="">
+    <header class="board-head">
+      <button type="button" class="logo-hit js-logo" title="SALIN" aria-label="SALIN logo">
+        <img src="assets/logo.png" alt="SA·LIN Eco-Souvenir Booth">
+      </button>
+      <div class="board-titles">
+        <h1>Souvenir Wall</h1>
+        <p id="board-event" class="board-event"></p>
+      </div>
+    </header>
+    <div class="board-scroll" id="board-scroll">
+      <div class="board-grid" id="board-grid"></div>
+    </div>
+    <footer class="board-foot">
+      <div id="thanks-bar" class="thanks-bar hidden">
+        <p>Thank you! Your photo is on the wall.</p>
+        <button type="button" class="btn btn-main" id="btn-next">Next guest</button>
+      </div>
+      <button type="button" class="btn btn-ghost hidden" id="btn-back-booth">Back to booth</button>
+      <p class="board-tag">Snap · Write · Pin it</p>
+    </footer>
+  </section>
+
+  <!-- PIN GATE -->
+  <div id="pin-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="pin-title">
+    <div class="modal-card">
+      <h2 id="pin-title">Host access</h2>
+      <div class="pin-dots" id="pin-dots" aria-hidden="true"></div>
+      <div class="pad" id="pin-pad"></div>
+      <p class="pad-msg" id="pin-msg"></p>
+      <div class="btn-row" style="margin-top:14px">
+        <button type="button" class="btn btn-ghost" id="btn-pin-cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADMIN -->
+  <div id="admin-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="admin-title">
+    <div class="admin-sheet">
+      <header class="admin-head">
+        <h2 id="admin-title">Host admin</h2>
+        <div class="admin-status">
+          <p class="admin-count" id="admin-count">✓ 0 photos saved</p>
+          <p class="admin-persist" id="admin-persist"></p>
+          <p class="admin-last-backup" id="admin-last-backup"></p>
+        </div>
+        <button type="button" class="btn btn-ghost" id="btn-admin-close">Close</button>
+      </header>
+      <p id="host-warn" class="admin-error hidden" role="status"></p>
+      <p id="admin-backup-error" class="admin-error hidden"></p>
+
+      <section class="admin-section">
+        <h3>Event photos</h3>
+        <div class="btn-row" style="justify-content:flex-start;margin-bottom:12px">
+          <button type="button" class="btn" id="btn-export-all">Export all (backup so far)<span id="export-nudge" class="nudge hidden" aria-label="Backup recommended">•</span></button>
+          <button type="button" class="btn btn-ghost" id="btn-pick">Pick photos</button>
+          <button type="button" class="btn btn-gold hidden" id="btn-export-picked">Export selected</button>
+          <button type="button" class="btn btn-ghost" id="btn-new-event">Start new event</button>
+          <button type="button" class="btn btn-ghost" id="btn-setup-tips">Setup tips</button>
+        </div>
+        <p id="pick-hint" class="hidden" style="margin:0 0 10px;color:var(--muted)">Tick the photos to include, then tap Export selected. Guests never see this.</p>
+        <div class="admin-grid" id="admin-grid"></div>
+      </section>
+
+      <section class="admin-section">
+        <h3>Cloud backup</h3>
+        <div class="switch-row">
+          <button type="button" class="switch" id="backup-toggle" aria-pressed="false" aria-label="Cloud backup on or off"></button>
+          <span id="backup-toggle-label">Off — photos stay on this tablet only</span>
+        </div>
+        <div class="field">
+          <label for="backup-url">Web App URL</label>
+          <input type="url" id="backup-url" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off" spellcheck="false">
+        </div>
+        <div class="field">
+          <label for="backup-secret">Secret</label>
+          <input type="password" id="backup-secret" placeholder="Paste the secret from the setup log" autocomplete="off" spellcheck="false">
+        </div>
+        <div class="field">
+          <label for="event-name">Event name</label>
+          <input type="text" id="event-name" maxlength="80" placeholder="SALIN Eco Souvenir Bar">
+        </div>
+        <div class="field">
+          <label for="event-date">Event date</label>
+          <input type="date" id="event-date">
+        </div>
+        <div class="btn-row" style="justify-content:flex-start">
+          <button type="button" class="btn btn-ghost" id="btn-test">Test connection</button>
+        </div>
+        <p class="test-msg" id="test-msg"></p>
+      </section>
+
+      <section class="admin-section">
+        <h3>Change PIN</h3>
+        <div class="field">
+          <label for="new-pin">New 4-digit PIN</label>
+          <input type="password" id="new-pin" inputmode="numeric" maxlength="8" placeholder="1234" autocomplete="off">
+        </div>
+        <div class="btn-row" style="justify-content:flex-start">
+          <button type="button" class="btn btn-ghost" id="btn-save-pin">Save PIN</button>
+        </div>
+        <p class="test-msg" id="pin-save-msg"></p>
+      </section>
+    </div>
+  </div>
+
+  <!-- START NEW EVENT -->
+  <div id="newevent-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="ne-title">
+    <div class="modal-card ne-card">
+      <h2 id="ne-title">Start new event</h2>
+
+      <div id="ne-step-a" class="ne-step">
+        <p id="ne-export-copy">Did you export this event's photos?</p>
+        <p id="ne-export-count" class="ne-count"></p>
+        <div class="btn-row">
+          <button type="button" class="btn" id="ne-export-now">Export now</button>
+          <button type="button" class="btn btn-ghost" id="ne-skip-export">Skip</button>
+        </div>
+      </div>
+
+      <div id="ne-step-b" class="ne-step hidden">
+        <p>Enter the host PIN to continue.</p>
+        <div class="pin-dots" id="ne-pin-dots" aria-hidden="true"></div>
+        <div class="pad" id="ne-pin-pad"></div>
+        <p class="pad-msg" id="ne-pin-msg"></p>
+      </div>
+
+      <div id="ne-step-c" class="ne-step hidden">
+        <p>This will clear the wall on this tablet (photos already in Google Drive stay there). Type <strong>CLEAR</strong> to enable the button.</p>
+        <div class="field">
+          <label for="ne-clear-type">Type CLEAR</label>
+          <input type="text" id="ne-clear-type" autocomplete="off" spellcheck="false" placeholder="CLEAR">
+        </div>
+        <button type="button" class="btn btn-danger btn-block" id="ne-clear-wall" disabled>Clear wall</button>
+      </div>
+
+      <div id="ne-step-d" class="ne-step hidden">
+        <p>Name the new event. The date will print on each souvenir photo, under “Souvenir Album”.</p>
+        <div class="field">
+          <label for="ne-event-name">Event name</label>
+          <input type="text" id="ne-event-name" maxlength="80" placeholder="SALIN Eco Souvenir Bar">
+        </div>
+        <div class="field">
+          <label for="ne-event-date">Event date</label>
+          <input type="date" id="ne-event-date">
+        </div>
+        <button type="button" class="btn btn-block" id="ne-start">Start this event</button>
+      </div>
+
+      <div class="btn-row" style="margin-top:16px">
+        <button type="button" class="btn btn-ghost" id="ne-cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETUP TIPS (host only) -->
+  <div id="setup-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="setup-title">
+    <div class="admin-sheet setup-sheet">
+      <header class="admin-head">
+        <h2 id="setup-title">Setup tips</h2>
+        <button type="button" class="btn btn-ghost" id="btn-setup-close">Close</button>
+      </header>
+      <div class="setup-body" id="setup-body">
+        <ol class="setup-list">
+          <li>Open the booth from its <strong>https</strong> link (not a downloaded file). The camera needs a secure page.</li>
+          <li>Add it to the Home Screen so photos are better protected and it opens like an app.
+            <ul>
+              <li><strong>iPad:</strong> Share button → <strong>Add to Home Screen</strong>.</li>
+              <li><strong>Android:</strong> browser menu → <strong>Add to Home Screen</strong> or <strong>Install app</strong>.</li>
+            </ul>
+          </li>
+          <li>During the event, lock the tablet to this app so guests cannot leave it.
+            <ul>
+              <li><strong>iPad Guided Access:</strong> Settings → Accessibility → Guided Access, turn it on, then triple-click the side (or Home) button to start. Set a passcode you remember.</li>
+              <li><strong>Android app pinning:</strong> Settings → Security → App pinning (wording varies). Pin the SALIN booth, then use your PIN or fingerprint to unpin.</li>
+            </ul>
+          </li>
+          <li>Never use a private or incognito tab. Photos may disappear when the tab closes.</li>
+          <li>Never clear this browser's data or “website data” before you have exported the photos.</li>
+          <li>At the end of the event, open Host admin (press and hold the logo) and tap <strong>Export all (backup so far)</strong>. Keep that ZIP in a safe place. If Cloud backup is on, also check that the Drive count matches.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/zip.js"></script>
+  <script src="js/frame.js"></script>
+  <script src="js/backup.js"></script>
+  <script src="js/compliments.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
