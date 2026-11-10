@@ -41,7 +41,15 @@
       <div class="camera-frame">
         <video id="cam" autoplay muted playsinline webkit-playsinline></video>
         <div id="compliment" class="compliment" aria-live="polite"><span id="compliment-text"></span></div>
-        <div id="countdown" class="countdown hidden" aria-live="assertive"></div>
+        <div id="countdown" class="countdown hidden" aria-live="assertive">
+          <div class="countdown-wrap">
+            <svg viewBox="0 0 340 340" aria-hidden="true" focusable="false">
+              <circle class="countdown-fill" cx="170" cy="170" r="159"></circle>
+              <circle class="countdown-ring" cx="170" cy="170" r="159" pathLength="1000"></circle>
+            </svg>
+            <div class="countdown-num"></div>
+          </div>
+        </div>
         <div id="flash" class="flash"></div>
         <div id="cam-error" class="cam-error hidden" role="alert"></div>
       </div>

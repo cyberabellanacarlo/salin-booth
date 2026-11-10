@@ -1,5 +1,5 @@
 /* Versioned cache. Guest photos live in IndexedDB and are never stored or cleared here. */
-var CACHE = "salin-booth-v6";
+var CACHE = "salin-booth-v7";
 var SHELL = [
   "./",
   "./index.html",
@@ -19,7 +19,13 @@ var SHELL = [
   "./assets/fonts/CormorantGaramond-Italic.ttf",
   "./assets/icons/icon-192.png",
   "./assets/icons/icon-512.png",
-  "./assets/icons/apple-touch-icon.png"
+  "./assets/icons/apple-touch-icon.png",
+  "./assets/mediapipe/vision_bundle.js",
+  "./assets/mediapipe/vision_bundle.mjs",
+  "./assets/mediapipe/blaze_face_short_range.tflite",
+  "./assets/mediapipe/face_landmarker.task",
+  "./assets/mediapipe/wasm/vision_wasm_internal.js",
+  "./assets/mediapipe/wasm/vision_wasm_internal.wasm"
 ];
 
 self.addEventListener("install", function (event) {

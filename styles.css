@@ -299,12 +299,72 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: clamp(80px, 22vw, 180px);
-  color: #FBF9F4;
-  text-shadow: 0 4px 24px rgba(0,0,0,0.35);
   z-index: 3;
   pointer-events: none;
-  font-weight: 600;
+  overflow: visible;
+}
+.countdown-wrap {
+  position: relative;
+  height: 60%;
+  width: auto;
+  aspect-ratio: 1 / 1;
+  max-width: 90%;
+  max-height: 90%;
+  container-type: size;
+}
+.countdown-wrap svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+  overflow: visible;
+}
+.countdown-fill {
+  fill: rgba(47, 58, 38, 0.35);
+  stroke: none;
+}
+.countdown-ring {
+  fill: none;
+  stroke: #B08D57;
+  stroke-width: 12;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 0;
+  filter: drop-shadow(0 0 8px rgba(176, 141, 87, 0.55));
+}
+.countdown-ring.run {
+  animation: countdownDrain 1s linear forwards;
+}
+@keyframes countdownDrain {
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: 1000; }
+}
+.countdown-num {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Cormorant Garamond", "Palatino Linotype", Palatino, "Times New Roman", serif;
+  font-weight: 700;
+  font-style: normal;
+  font-size: 200px;
+  font-size: min(360px, 84cqmin);
+  line-height: 1;
+  font-variant-numeric: lining-nums;
+  font-feature-settings: "lnum" 1;
+  color: rgba(241, 236, 226, 0.9);
+  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+  user-select: none;
+}
+.countdown-num.pop {
+  animation: countdownPop 250ms ease-out both;
+}
+@keyframes countdownPop {
+  from { transform: scale(1.3); }
+  to { transform: scale(1); }
 }
 .flash {
   position: absolute;
@@ -314,9 +374,9 @@ button {
   z-index: 4;
   pointer-events: none;
 }
-.flash.on { animation: flash 0.35s ease-out; }
+.flash.on { animation: flash 150ms linear forwards; }
 @keyframes flash {
-  0% { opacity: 0.85; }
+  0%, 99% { opacity: 0.6; }
   100% { opacity: 0; }
 }
 .cam-error {
@@ -887,6 +947,8 @@ button {
     box-shadow: 0 0 0 4px rgba(176, 141, 87, 0.55), 0 12px 26px var(--shadow);
   }
   .flash.on { animation: none; opacity: 0; }
+  .countdown-num.pop { animation: none; transform: none; }
+  .countdown-ring.run { animation: none; }
 }
 
 /* ---------- live compliments (overlay only, never in the saved photo) ---------- */

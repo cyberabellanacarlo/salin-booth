@@ -211,6 +211,44 @@
     return new Promise(function (resolve) { setTimeout(resolve, ms); });
   }
 
+  function prefersReducedMotion() {
+    return window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  }
+
+  /* Visual 3-2-1 overlay, then flash, then takePhoto(). Overlay is never drawn into the still. */
+  function runCircularCountdown(takePhoto) {
+    var numEl = countdownEl.querySelector(".countdown-num");
+    var ringEl = countdownEl.querySelector(".countdown-ring");
+    var reduced = prefersReducedMotion();
+    var n = 3;
+    countdownEl.classList.remove("hidden");
+    function tick() {
+      if (n < 1) {
+        if (numEl) numEl.textContent = "";
+        countdownEl.classList.add("hidden");
+        flashEl.classList.remove("on");
+        void flashEl.offsetWidth;
+        flashEl.classList.add("on");
+        if (takePhoto) takePhoto();
+        return;
+      }
+      if (numEl) {
+        numEl.textContent = String(n);
+        numEl.classList.remove("pop");
+        void numEl.offsetWidth;
+        if (!reduced) numEl.classList.add("pop");
+      }
+      if (ringEl) {
+        ringEl.classList.remove("run");
+        void ringEl.getBoundingClientRect();
+        ringEl.classList.add("run");
+      }
+      n -= 1;
+      wait(1000).then(tick);
+    }
+    tick();
+  }
+
   function startCountdown() {
     if (busy) return;
     if (!stream) {
@@ -224,44 +262,32 @@
     clearIdleTimer();
     shutterBtn.disabled = true;
     if (window.SalinCompliments) SalinCompliments.fresh();
-    var n = 3;
-    countdownEl.classList.remove("hidden");
-    function tick() {
-      if (n >= 1) {
-        countdownEl.textContent = String(n);
-        n -= 1;
-        wait(800).then(tick);
-      } else {
-        countdownEl.textContent = "";
-        countdownEl.classList.add("hidden");
+    runCircularCountdown(function takePhoto() {
+      playShutter();
+      if (window.SalinCompliments) SalinCompliments.flashShutter();
+      Promise.all([captureStill(), wait(150)]).then(function (results) {
+        var blob = results[0];
+        capturedBlob = blob;
+        if (capturedUrl) URL.revokeObjectURL(capturedUrl);
+        capturedUrl = URL.createObjectURL(blob);
+        captionPreview.src = capturedUrl;
+        captionInput.value = "";
+        charCount.textContent = "0";
+        showView("caption");
+        stopCamera();
+        busy = false;
+        countingDown = false;
+        shutterBtn.disabled = false;
+        bumpIdle();
+        setTimeout(function () { captionInput.focus(); }, 200);
+      }).catch(function () {
         flashEl.classList.remove("on");
-        void flashEl.offsetWidth;
-        flashEl.classList.add("on");
-        playShutter();
-        if (window.SalinCompliments) SalinCompliments.flashShutter();
-        captureStill().then(function (blob) {
-          capturedBlob = blob;
-          if (capturedUrl) URL.revokeObjectURL(capturedUrl);
-          capturedUrl = URL.createObjectURL(blob);
-          captionPreview.src = capturedUrl;
-          captionInput.value = "";
-          charCount.textContent = "0";
-          showView("caption");
-          stopCamera();
-          busy = false;
-          countingDown = false;
-          shutterBtn.disabled = false;
-          bumpIdle();
-          setTimeout(function () { captionInput.focus(); }, 200);
-        }).catch(function () {
-          busy = false;
-          countingDown = false;
-          shutterBtn.disabled = false;
-          bumpIdle();
-        });
-      }
-    }
-    tick();
+        busy = false;
+        countingDown = false;
+        shutterBtn.disabled = false;
+        bumpIdle();
+      });
+    });
   }
 
   function randomTilt() {
