@@ -22,8 +22,14 @@
   <section id="view-booth" class="view view-booth" aria-label="Photo booth">
     <header class="booth-head">
       <button type="button" class="logo-hit js-logo" title="SALIN" aria-label="SALIN logo">
-        <img src="assets/logo.png" alt="SA·LIN Eco-Souvenir Booth">
-        <span class="logo-lock" aria-hidden="true">
+        <span class="logo-ring" aria-hidden="true">
+          <svg viewBox="0 0 36 36" focusable="false">
+            <circle class="logo-ring-track" cx="18" cy="18" r="16" fill="none" pathLength="100"></circle>
+            <circle class="logo-ring-bar" cx="18" cy="18" r="16" fill="none" pathLength="100"></circle>
+          </svg>
+        </span>
+        <img src="assets/logo.png" alt="SA·LIN Eco-Souvenir Booth" draggable="false">
+        <span class="logo-lock" aria-hidden="true" draggable="false">
           <svg viewBox="0 0 24 24" width="14" height="14" focusable="false">
             <path fill="currentColor" d="M17 8h-1V6a4 4 0 1 0-8 0v2H7a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2zm-7-2a2 2 0 1 1 4 0v2h-4V6zm5 12H9v-2h6v2zm0-4H9v-2h6v2z"/>
           </svg>
@@ -50,8 +56,14 @@
   <section id="view-caption" class="view view-caption hidden" aria-label="Write a message">
     <header class="booth-head">
       <button type="button" class="logo-hit js-logo" title="SALIN" aria-label="SALIN logo">
-        <img src="assets/logo.png" alt="SA·LIN Eco-Souvenir Booth">
-        <span class="logo-lock" aria-hidden="true">
+        <span class="logo-ring" aria-hidden="true">
+          <svg viewBox="0 0 36 36" focusable="false">
+            <circle class="logo-ring-track" cx="18" cy="18" r="16" fill="none" pathLength="100"></circle>
+            <circle class="logo-ring-bar" cx="18" cy="18" r="16" fill="none" pathLength="100"></circle>
+          </svg>
+        </span>
+        <img src="assets/logo.png" alt="SA·LIN Eco-Souvenir Booth" draggable="false">
+        <span class="logo-lock" aria-hidden="true" draggable="false">
           <svg viewBox="0 0 24 24" width="14" height="14" focusable="false">
             <path fill="currentColor" d="M17 8h-1V6a4 4 0 1 0-8 0v2H7a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2zm-7-2a2 2 0 1 1 4 0v2h-4V6zm5 12H9v-2h6v2zm0-4H9v-2h6v2z"/>
           </svg>
@@ -77,8 +89,14 @@
     <img class="fl fl-bl" src="assets/flower_bl.png" alt="">
     <header class="board-head">
       <button type="button" class="logo-hit js-logo" title="SALIN" aria-label="SALIN logo">
-        <img src="assets/logo.png" alt="SA·LIN Eco-Souvenir Booth">
-        <span class="logo-lock" aria-hidden="true">
+        <span class="logo-ring" aria-hidden="true">
+          <svg viewBox="0 0 36 36" focusable="false">
+            <circle class="logo-ring-track" cx="18" cy="18" r="16" fill="none" pathLength="100"></circle>
+            <circle class="logo-ring-bar" cx="18" cy="18" r="16" fill="none" pathLength="100"></circle>
+          </svg>
+        </span>
+        <img src="assets/logo.png" alt="SA·LIN Eco-Souvenir Booth" draggable="false">
+        <span class="logo-lock" aria-hidden="true" draggable="false">
           <svg viewBox="0 0 24 24" width="14" height="14" focusable="false">
             <path fill="currentColor" d="M17 8h-1V6a4 4 0 1 0-8 0v2H7a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2zm-7-2a2 2 0 1 1 4 0v2h-4V6zm5 12H9v-2h6v2zm0-4H9v-2h6v2z"/>
           </svg>
@@ -106,6 +124,8 @@
   <div id="pin-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="pin-title">
     <div class="modal-card">
       <h2 id="pin-title">Host access</h2>
+      <label class="sr-only" for="pin-entry">Host PIN</label>
+      <input type="text" id="pin-entry" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="one-time-code" autocapitalize="off" spellcheck="false" enterkeyhint="done">
       <div class="pin-dots" id="pin-dots" aria-hidden="true"></div>
       <div class="pad" id="pin-pad"></div>
       <p class="pad-msg" id="pin-msg"></p>
@@ -135,7 +155,7 @@
         <h3>Change PIN</h3>
         <div class="field">
           <label for="new-pin">New 4-digit PIN</label>
-          <input type="password" id="new-pin" inputmode="numeric" maxlength="8" placeholder="1234" autocomplete="off">
+          <input type="password" id="new-pin" inputmode="numeric" pattern="[0-9]*" maxlength="8" placeholder="1234" autocomplete="off">
         </div>
         <div class="btn-row" style="justify-content:flex-start">
           <button type="button" class="btn btn-ghost" id="btn-save-pin">Save PIN</button>

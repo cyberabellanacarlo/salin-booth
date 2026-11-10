@@ -630,11 +630,17 @@
     $("pin-msg").textContent = "";
     renderPinDots();
     $("pin-modal").classList.remove("hidden");
+    var input = $("pin-entry");
+    if (input) {
+      input.value = "";
+      setTimeout(function () { input.focus(); }, 50);
+    }
   }
 
   function closePinModal() {
     $("pin-modal").classList.add("hidden");
     pinBuffer = "";
+    if ($("pin-entry")) $("pin-entry").value = "";
     bumpIdle();
   }
 
@@ -647,6 +653,7 @@
       d.className = "pin-dot" + (i < pinBuffer.length ? " on" : "");
       wrap.appendChild(d);
     }
+    syncPinEntry();
   }
 
   function buildPad() {
@@ -662,6 +669,20 @@
     });
   }
 
+  function tryUnlockPin() {
+    if (pinBuffer.length < 4) return;
+    storage.getSettings().then(function (s) {
+      if (pinBuffer === String(s.pin || "1234")) {
+        closePinModal();
+        openAdmin();
+      } else if (pinBuffer.length >= String(s.pin || "1234").length) {
+        $("pin-msg").textContent = "That PIN is not right. Try again.";
+        pinBuffer = "";
+        renderPinDots();
+      }
+    });
+  }
+
   function onPad(k) {
     $("pin-msg").textContent = "";
     if (k === "C") { pinBuffer = ""; renderPinDots(); return; }
@@ -669,18 +690,7 @@
     if (pinBuffer.length >= 8) return;
     pinBuffer += k;
     renderPinDots();
-    if (pinBuffer.length >= 4) {
-      storage.getSettings().then(function (s) {
-        if (pinBuffer === String(s.pin || "1234")) {
-          closePinModal();
-          openAdmin();
-        } else if (pinBuffer.length >= String(s.pin || "1234").length) {
-          $("pin-msg").textContent = "That PIN is not right. Try again.";
-          pinBuffer = "";
-          renderPinDots();
-        }
-      });
-    }
+    tryUnlockPin();
   }
 
   function formatClock(ts) {
@@ -863,18 +873,76 @@
     });
   }
 
+  var LOGO_HOLD_MS = 1200;
+  var LOGO_TAP_WINDOW = 2500;
+  var LOGO_TAP_COUNT = 5;
+
   function bindLongPress(el, fn) {
-    var t = null;
-    function start(e) {
-      if (e.button && e.button !== 0) return;
-      t = setTimeout(function () { t = null; fn(); }, 800);
+    var holdTimer = null;
+    var taps = [];
+    var imgs = el.querySelectorAll("img");
+    var i;
+    for (i = 0; i < imgs.length; i++) {
+      imgs[i].draggable = false;
+      imgs[i].setAttribute("draggable", "false");
     }
-    function end() { if (t) { clearTimeout(t); t = null; } }
+    el.setAttribute("draggable", "false");
+
+    function clearHold() {
+      if (holdTimer) {
+        clearTimeout(holdTimer);
+        holdTimer = null;
+      }
+      el.classList.remove("is-holding");
+    }
+
+    function start(e) {
+      if (e.pointerType === "mouse" && e.button !== 0) return;
+      if (e.cancelable) e.preventDefault();
+      clearHold();
+      /* restart the gold ring fill */
+      void el.offsetWidth;
+      el.classList.add("is-holding");
+      holdTimer = setTimeout(function () {
+        holdTimer = null;
+        el.classList.remove("is-holding");
+        taps = [];
+        fn();
+      }, LOGO_HOLD_MS);
+    }
+
+    function end(e) {
+      if (!holdTimer) {
+        clearHold();
+        return;
+      }
+      /* Released early: count as a tap for the 5-tap fallback. */
+      clearHold();
+      var now = Date.now();
+      taps = taps.filter(function (ts) { return now - ts < LOGO_TAP_WINDOW; });
+      taps.push(now);
+      if (taps.length >= LOGO_TAP_COUNT) {
+        taps = [];
+        fn();
+      }
+    }
+
+    function cancel() {
+      clearHold();
+    }
+
     el.addEventListener("pointerdown", start);
     el.addEventListener("pointerup", end);
-    el.addEventListener("pointercancel", end);
-    el.addEventListener("pointerleave", end);
-    el.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+    el.addEventListener("pointercancel", cancel);
+    el.addEventListener("pointerleave", cancel);
+    el.addEventListener("contextmenu", function (e) { e.preventDefault(); e.stopPropagation(); });
+    el.addEventListener("dragstart", function (e) { e.preventDefault(); });
+    el.addEventListener("click", function (e) { e.preventDefault(); });
+  }
+
+  function syncPinEntry() {
+    var input = $("pin-entry");
+    if (input && input.value !== pinBuffer) input.value = pinBuffer;
   }
 
   function wire() {
@@ -882,6 +950,16 @@
     document.querySelectorAll(".js-logo").forEach(function (el) {
       bindLongPress(el, openPinModal);
     });
+    if ($("pin-entry")) {
+      $("pin-entry").addEventListener("input", function () {
+        var v = String($("pin-entry").value || "").replace(/\D/g, "").slice(0, 8);
+        $("pin-entry").value = v;
+        pinBuffer = v;
+        $("pin-msg").textContent = "";
+        renderPinDots();
+        tryUnlockPin();
+      });
+    }
 
     shutterBtn.addEventListener("click", startCountdown);
     if (switchBtn) {
@@ -1176,6 +1254,7 @@
       d.className = "pin-dot" + (i < nePinBuffer.length ? " on" : "");
       wrap.appendChild(d);
     }
+    syncPinEntry();
   }
 
   function buildNePad() {

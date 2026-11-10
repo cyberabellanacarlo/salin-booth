@@ -146,17 +146,34 @@ button {
   flex-shrink: 0;
 }
 .logo-hit {
-  min-height: 48px;
-  min-width: 48px;
+  position: relative;
+  min-height: 64px;
+  min-width: 64px;
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 4px 8px;
+  padding: 8px 12px;
   background: none;
   box-shadow: none;
   cursor: pointer;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: none;
+  -webkit-user-drag: none;
+}
+.logo-hit img,
+.logo-hit svg,
+.logo-lock,
+.logo-ring {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
 }
 .logo-lock {
   display: inline-flex;
@@ -172,6 +189,66 @@ button {
   height: 64px;
   width: auto;
   mix-blend-mode: multiply;
+}
+.logo-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 68px;
+  height: 68px;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+}
+.logo-ring svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.logo-ring-track {
+  stroke: rgba(176, 141, 87, 0.28);
+  stroke-width: 1.75;
+}
+.logo-ring-bar {
+  stroke: #B08D57;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  transform: rotate(-90deg);
+  transform-origin: 18px 18px;
+}
+.logo-hit.is-holding .logo-ring-bar {
+  animation: logoHoldFill 1.2s linear forwards;
+}
+@keyframes logoHoldFill {
+  from { stroke-dashoffset: 100; }
+  to { stroke-dashoffset: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .logo-hit.is-holding .logo-ring-bar { animation-duration: 0.01s; }
+}
+#pin-entry {
+  display: block;
+  width: 100%;
+  max-width: 240px;
+  margin: 0 auto 12px;
+  min-height: 48px;
+  text-align: center;
+  letter-spacing: 0.4em;
+  font-size: 22px;
+  border: 1.5px solid var(--gold);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--olive);
+  padding: 8px 12px;
+}
+#pin-entry:focus { outline: 2px solid var(--olive); outline-offset: 2px; }
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 .eyebrow {
   font-size: 13px;
