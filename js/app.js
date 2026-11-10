@@ -11,7 +11,7 @@
   var flashEl = document.getElementById("flash");
   var camErrorEl = document.getElementById("cam-error");
   var shutterBtn = document.getElementById("btn-shutter");
-  var switchBtn = document.getElementById("btn-switch");
+  var switchBtn = document.getElementById("btn-admin-switch");
   var captionInput = document.getElementById("caption-input");
   var captionPreview = document.getElementById("caption-preview");
   var charCount = document.getElementById("char-count");
